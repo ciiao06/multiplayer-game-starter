@@ -14,6 +14,11 @@ const x = canvas.width / 2
 const y = canvas.height / 2
 
 const frontEndPlayers = {}
+const projectiles = []
+const particles = []
+
+let animationId
+let score = 0
 
 socket.on('updatePlayers',(backEndPlayers)=>{
   for(const id in backEndPlayers){
@@ -63,7 +68,45 @@ socket.on('updatePlayers',(backEndPlayers)=>{
   }
 })
 
-let animationId
+// let animationId
+
+window.addEventListener('click', (event) => {
+  const angle = Math.atan2(
+    event.clientY - canvas.height / 2,
+    event.clientX - canvas.width / 2
+  );
+  const velocity = {
+    x: Math.cos(angle) * 5,
+    y: Math.sin(angle) * 5
+  };
+  const projectile = new Projectile(
+    frontEndPlayers[socket.id].x,
+    frontEndPlayers[socket.id].y,
+    5,
+    'white',
+    velocity
+  );
+  projectiles.push(projectile);
+
+  // Emit projectile information to the server
+  socket.emit('shootProjectile', {
+    x: projectile.x,
+    y: projectile.y,
+    radius: projectile.radius,
+    color: projectile.color,
+    velocity: projectile.velocity
+  });
+});
+
+socket.on('addProjectile', (projectile) => {
+  projectiles.push(new Projectile(
+    projectile.x,
+    projectile.y,
+    projectile.radius,
+    projectile.color,
+    projectile.velocity
+  ));
+});
 
 function animate() {
   animationId = requestAnimationFrame(animate)
@@ -73,6 +116,32 @@ function animate() {
   for(const id in frontEndPlayers){
     const frontEndPlayer = frontEndPlayers[id]
     frontEndPlayer.draw()
+  }
+
+  for (let index = particles.length - 1; index >= 0; index--) {
+    const particle = particles[index]
+
+    if (particle.alpha <= 0) {
+      particles.splice(index, 1)
+    } else {
+      particle.update()
+    }
+  }
+
+  for (let index = projectiles.length - 1; index >= 0; index--) {
+    const projectile = projectiles[index]
+
+    projectile.update()
+
+    // remove from edges of screen
+    if (
+      projectile.x - projectile.radius < 0 ||
+      projectile.x - projectile.radius > canvas.width ||
+      projectile.y + projectile.radius < 0 ||
+      projectile.y - projectile.radius > canvas.height
+    ) {
+      projectiles.splice(index, 1)
+    }
   }
 }
 

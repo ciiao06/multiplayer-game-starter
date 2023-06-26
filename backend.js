@@ -57,6 +57,11 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('shootProjectile', (projectile) => {
+    // Broadcast the projectile information to all clients except the sender
+    socket.broadcast.emit('addProjectile', projectile);
+  });
+
   console.log(backEndPlayers)
 })
 
