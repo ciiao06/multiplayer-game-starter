@@ -20,12 +20,11 @@ const backEndPlayers = {}
 const SPEED = 15
 
 io.on('connection', (socket) => {
-  console.log('a user connected')
+  console.log('User(s) connected:')
   backEndPlayers[socket.id] = {
     x: 500 * Math.random(),
     y: 500 * Math.random(),
     color: `hsl(${360 * Math.random()}, 100%, 50%)`,
-    sequenceNumber: 0
   }
 
   io.emit('updatePlayers', backEndPlayers)
@@ -70,7 +69,7 @@ setInterval(() => {
 }, 15)
 
 server.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Listening on port ${port}`)
 })
 
-console.log('server did load')
+console.log('Server loaded')

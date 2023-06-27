@@ -3,8 +3,6 @@ const c = canvas.getContext('2d')
 
 const socket = io()
 
-const scoreEl = document.querySelector('#scoreEl')
-
 const devicePixelRatio = window.devicePixelRatio || 1
 
 canvas.width = innerWidth * devicePixelRatio
@@ -18,12 +16,12 @@ const projectiles = []
 const particles = []
 
 let animationId
-let score = 0
+let playerColor
 
 socket.on('updatePlayers',(backEndPlayers)=>{
   for(const id in backEndPlayers){
     const backEndPlayer = backEndPlayers[id]
-
+    
     if(!frontEndPlayers[id]){
       frontEndPlayers[id] = new Player({
         x:backEndPlayer.x, 
@@ -71,19 +69,25 @@ socket.on('updatePlayers',(backEndPlayers)=>{
 // let animationId
 
 window.addEventListener('click', (event) => {
-  const angle = Math.atan2(
-    event.clientY - canvas.height / 2,
-    event.clientX - canvas.width / 2
-  );
+  const rect = canvas.getBoundingClientRect(); // Adjust if necessary based on your canvas element
+  const canvasX = event.clientX - rect.left;
+  const canvasY = event.clientY - rect.top;
+  
+  const dx = canvasX - frontEndPlayers[socket.id].x;
+  const dy = canvasY - frontEndPlayers[socket.id].y;
+  const angle = Math.atan2(dy, dx);
+  
+  const speed = 10; // Adjust the speed as needed
   const velocity = {
-    x: Math.cos(angle) * 5,
-    y: Math.sin(angle) * 5
+    x: Math.cos(angle) * speed,
+    y: Math.sin(angle) * speed
   };
+  
   const projectile = new Projectile(
     frontEndPlayers[socket.id].x,
     frontEndPlayers[socket.id].y,
     5,
-    'white',
+    "white",
     velocity
   );
   projectiles.push(projectile);
@@ -97,6 +101,7 @@ window.addEventListener('click', (event) => {
     velocity: projectile.velocity
   });
 });
+
 
 socket.on('addProjectile', (projectile) => {
   projectiles.push(new Projectile(

@@ -14,7 +14,7 @@ class Projectile {
     c.fill()
   }
 
-  update() {
+  update() { 
     this.draw()
     this.x = this.x + this.velocity.x
     this.y = this.y + this.velocity.y
